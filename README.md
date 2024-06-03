@@ -1,145 +1,61 @@
-# Marketplace Smart Contract
+# Smart Contract Contract
 
-## Overview
-
-This repository contains the code for a simple decentralized marketplace smart contract implemented in Solidity. The contract allows users to list items for sale and buy items from other users.
+This is a contract that allows the owner to buy and sell ETH. The contract maintains a balance and emits events for buy and sell transactions.
 
 ## Features
 
-- **Owner Management**: The contract owner is set at deployment and has exclusive rights to certain actions.
-- **Item Listing**: Users can list items for sale by specifying a name and price.
-- **Item Purchase**: Users can purchase listed items, with funds being transferred to the seller.
-- **Item Retrieval**: Anyone can view the details of a listed item.
+- Allows the owner to buy ETH and increase the contract balance.
+- Allows the owner to sell ETH and decrease the contract balance.
+- Emits events for buy and sell transactions.
+- Custom error handling for insufficient balance during sell transactions.
 
-## Contract Details
+## Contract Overview
 
-### SPDX License Identifier
-```solidity
-// SPDX-License-Identifier: MIT
-```
+### State Variables
 
-### Pragma Directive
-```solidity
-pragma solidity ^0.8.13;
-```
+- `address payable public owner`: The owner of the contract.
+- `uint256 public balance`: The current balance of the contract.
 
-### Contract Definition
-```solidity
-contract Marketplace {
-    address public owner;
+### Events
 
-    struct Item {
-        uint id;
-        string name;
-        uint price;
-        address payable seller;
-        address buyer;
-        bool sold;
-    }
+- `event Buy(uint256 amount)`: Emitted when ETH is bought.
+- `event Sell(uint256 amount)`: Emitted when ETH is sold.
 
-    uint public itemCount;
-    mapping(uint => Item) public items;
+### Constructor
 
-    event ItemListed(uint id, string name, uint price, address seller);
-    event ItemSold(uint id, address buyer, uint price);
+- `constructor(uint initBalance) payable`: Initializes the contract with the specified initial balance and sets the contract owner to the deployer.
 
-    constructor() {
-        owner = msg.sender;
-    }
+### Functions
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the contract owner can perform this action");
-        _;
-    }
+- `function getBalance() public view returns(uint256)`: Returns the current balance of the contract.
+- `function buy() public payable`: Allows the owner to buy ETH and increase the contract balance. Emits a `Buy` event.
+- `function sell(uint256 _sellAmount) public`: Allows the owner to sell ETH and decrease the contract balance. Emits a `Sell` event. Reverts with a custom error `InsufficientBalance` if the balance is insufficient.
 
-    modifier onlySeller(uint _itemId) {
-        require(items[_itemId].seller == msg.sender, "Only the seller can perform this action");
-        _;
-    }
+### Custom Error
 
-    function listItem(string memory _name, uint _price) public {
-        require(_price > 0, "Price must be greater than zero");
-
-        itemCount++;
-        items[itemCount] = Item(
-            itemCount,
-            _name,
-            _price,
-            payable(msg.sender),
-            address(0),
-            false
-        );
-
-        emit ItemListed(itemCount, _name, _price, msg.sender);
-    }
-
-    function buyItem(uint _itemId) public payable {
-        Item storage item = items[_itemId];
-        require(_itemId > 0 && _itemId <= itemCount, "Item does not exist");
-        require(msg.value == item.price, "Incorrect value sent");
-        require(!item.sold, "Item already sold");
-        require(item.seller != msg.sender, "Seller cannot buy their own item");
-
-        item.seller.transfer(msg.value);
-        item.buyer = msg.sender;
-        item.sold = true;
-
-        emit ItemSold(_itemId, msg.sender, item.price);
-    }
-
-    function getItem(uint _itemId) public view returns (Item memory) {
-        require(_itemId > 0 && _itemId <= itemCount, "Item does not exist");
-        return items[_itemId];
-    }
-}
-```
-
-## Functions
-
-### `listItem`
-```solidity
-function listItem(string memory _name, uint _price) public;
-```
-- Allows a user to list an item for sale.
-- Emits an `ItemListed` event.
-
-### `buyItem`
-```solidity
-function buyItem(uint _itemId) public payable;
-```
-- Allows a user to purchase a listed item.
-- Transfers the item's price to the seller.
-- Emits an `ItemSold` event.
-
-### `getItem`
-```solidity
-function getItem(uint _itemId) public view returns (Item memory);
-```
-- Returns the details of a specified item.
-
-## Events
-
-### `ItemListed`
-```solidity
-event ItemListed(uint id, string name, uint price, address seller);
-```
-- Emitted when an item is listed for sale.
-
-### `ItemSold`
-```solidity
-event ItemSold(uint id, address buyer, uint price);
-```
-- Emitted when an item is sold.
-
-## Deployment
-
-To deploy the contract, use the `Marketplace` constructor, which sets the deployer as the contract owner.
+- `error InsufficientBalance(uint256 balance, uint256 sellAmount)`: Custom error for handling insufficient balance during sell transactions.
 
 ## Usage
 
-1. **List an Item**: Call `listItem` with the item's name and price.
-2. **Buy an Item**: Call `buyItem` with the item's ID and send the correct value.
-3. **Get Item Details**: Call `getItem` with the item's ID.
+1. Deploy the contract with an initial balance:
+
+    ```solidity
+    uint initialBalance = 100; // Example initial balance
+    Assessment assessment = new Assessment(initialBalance);
+    ```
+
+2. Buy ETH (only the owner can call this function):
+
+    ```solidity
+    assessment.buy{value: msg.value}();
+    ```
+
+3. Sell ETH (only the owner can call this function):
+
+    ```solidity
+    uint sellAmount = 50; // Example sell amount
+    assessment.sell(sellAmount);
+    ```
 
 ## Authors
 
@@ -148,4 +64,5 @@ Email : 8214785@ntc.edu.ph
 
 ## License
 
-This project is licensed under the MIT License
+This project is licensed under the UNLICENSED License.
+
