@@ -57,6 +57,9 @@ This is a contract that allows the owner to buy and sell ETH. The contract maint
     assessment.sell(sellAmount);
     ```
 
+## Template
+Template used by Metacrafters Chris (https://github.com/MetacrafterChris/SCM-Starter.git)
+
 ## Authors
 
 Aaron Gabrielle A. Galera
